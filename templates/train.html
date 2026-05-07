@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Train Models - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-brain me-2"></i>Train Ensemble Models</h2>
+        <p class="text-muted">Select task type and train multiple ensemble models simultaneously</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-sliders-h me-2"></i>Training Configuration</div>
+            <div class="card-body">
+                <form method="POST" id="trainForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Task Type</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check card p-3 task-card">
+                                    <input class="form-check-input" type="radio" name="task_type" value="regression" id="regression" checked>
+                                    <label class="form-check-label w-100 text-center" for="regression">
+                                        <i class="fas fa-chart-line fa-2x text-primary mb-2 d-block"></i>
+                                        <strong>Regression</strong>
+                                        <small class="d-block text-muted">Predict exact demand value</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check card p-3 task-card">
+                                    <input class="form-check-input" type="radio" name="task_type" value="classification" id="classification">
+                                    <label class="form-check-label w-100 text-center" for="classification">
+                                        <i class="fas fa-tags fa-2x text-success mb-2 d-block"></i>
+                                        <strong>Classification</strong>
+                                        <small class="d-block text-muted">Predict demand level (Low/Med/High)</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check card p-3 task-card">
+                                    <input class="form-check-input" type="radio" name="task_type" value="timeseries" id="timeseries">
+                                    <label class="form-check-label w-100 text-center" for="timeseries">
+                                        <i class="fas fa-clock fa-2x text-danger mb-2 d-block"></i>
+                                        <strong>Time Series</strong>
+                                        <small class="d-block text-muted">Forecast demand over time</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Test Size: <span id="testSizeValue">20%</span></label>
+                        <input type="range" class="form-range" name="test_size" min="0.1" max="0.4" step="0.05" value="0.2"
+                               oninput="document.getElementById('testSizeValue').textContent = Math.round(this.value*100)+'%'">
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-layer-group me-2"></i>Models to Train</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-primary"><i class="fas fa-boxes me-1"></i>Bagging</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-1"></i>Random Forest</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Bagging (DT)</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>Extra Trees</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-danger"><i class="fas fa-rocket me-1"></i>Boosting</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-1"></i>Gradient Boosting</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>XGBoost</li>
+                                        <li><i class="fas fa-check text-success me-1"></i>AdaBoost</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-info"><i class="fas fa-vote-yea me-1"></i>Voting</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-1"></i>Voting Ensemble</li>
+                                        <li class="text-muted"><small>(RF + GB + XGBoost)</small></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-lg btn-primary w-100" id="trainBtn">
+                        <i class="fas fa-play me-2"></i>Start Training
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('trainForm').addEventListener('submit', function(e) {
+    var btn = document.getElementById('trainBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Training... Please wait (this may take 30-60 seconds)';
+    btn.disabled = true;
+    return true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Data Exploration - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-database me-2"></i>Data Exploration</h2>
+        <p class="text-muted">Browse and explore the retail demand dataset</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-primary">{{ info.shape[0] }}</h5>
+                <small class="text-muted">Rows</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-success">{{ info.shape[1] }}</h5>
+                <small class="text-muted">Columns</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-info">{{ info.numeric_cols|length }}</h5>
+                <small class="text-muted">Numeric</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-warning">{{ info.categorical_cols|length }}</h5>
+                <small class="text-muted">Categorical</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-table me-2"></i>Data Table</span>
+        <span class="badge bg-primary">Page {{ page }} of {{ total_pages }}</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        {% for col in columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for col in columns %}
+                        <td>{{ row[col] }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page - 1 }}">Previous</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page or (p >= page - 2 and p <= page + 2) or p == 1 or p == total_pages %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                    {% elif p == page - 3 or p == page + 3 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page + 1 }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-hashtag me-2"></i>Numeric Columns</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Column</th><th>Mean</th><th>Std</th><th>Min</th><th>Max</th></tr></thead>
+                        <tbody>
+                            {% for col in info.numeric_cols %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td>{{ info.numeric_stats[col]['mean'] }}</td>
+                                <td>{{ info.numeric_stats[col]['std'] }}</td>
+                                <td>{{ info.numeric_stats[col]['min'] }}</td>
+                                <td>{{ info.numeric_stats[col]['max'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-tags me-2"></i>Categorical Columns</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Column</th><th>Unique Values</th><th>Missing</th></tr></thead>
+                        <tbody>
+                            {% for col in info.categorical_cols %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td>{{ info.missing_values[col] + (info.shape[0] - info.missing_values[col]) }}</td>
+                                <td>{{ info.missing_values[col] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

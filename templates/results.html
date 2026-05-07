@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Results - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-trophy me-2"></i>Training Results</h2>
+        <p class="text-muted">
+            Task: <span class="badge bg-primary">{{ task_type|upper }}</span>
+            Best Model: <span class="badge bg-success">{{ best_name }}</span>
+        </p>
+    </div>
+</div>
+
+<!-- Model Comparison Table -->
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-table me-2"></i>Model Performance Comparison</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Model</th>
+                        <th>Type</th>
+                        {% if task_type == 'regression' or task_type == 'timeseries' %}
+                        <th>RMSE</th>
+                        <th>MAE</th>
+                        <th>R2 Score</th>
+                        {% if task_type == 'regression' %}
+                        <th>CV Mean R2</th>
+                        {% endif %}
+                        {% else %}
+                        <th>Accuracy</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1 Score</th>
+                        <th>CV Mean Accuracy</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, metrics in results.items() %}
+                    <tr class="{% if name == best_name %}table-success fw-bold{% endif %}">
+                        <td>
+                            {{ name }}
+                            {% if name == best_name %}
+                            <span class="badge bg-success ms-1">Best</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if metrics.type == 'Bagging' %}
+                            <span class="badge bg-primary">Bagging</span>
+                            {% elif metrics.type == 'Boosting' %}
+                            <span class="badge bg-danger">Boosting</span>
+                            {% else %}
+                            <span class="badge bg-info">Voting</span>
+                            {% endif %}
+                        </td>
+                        {% if task_type == 'regression' or task_type == 'timeseries' %}
+                        <td>{{ metrics.RMSE }}</td>
+                        <td>{{ metrics.MAE }}</td>
+                        <td>{{ metrics.R2 }}</td>
+                        {% if task_type == 'regression' %}
+                        <td>{{ metrics.CV_Mean_R2 }} &plusmn; {{ metrics.CV_Std_R2 }}</td>
+                        {% endif %}
+                        {% else %}
+                        <td>{{ metrics.Accuracy }}</td>
+                        <td>{{ metrics.Precision }}</td>
+                        <td>{{ metrics.Recall }}</td>
+                        <td>{{ metrics.F1_Score }}</td>
+                        <td>{{ metrics.CV_Mean_Accuracy }} &plusmn; {{ metrics.CV_Std_Accuracy }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Plots -->
+<div class="row g-3 mb-4">
+    {% if comparison_plot %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-chart-bar me-2"></i>Model Comparison</div>
+            <div class="card-body">
+                <div id="comparisonPlot" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if importance_plot %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-sort-amount-down me-2"></i>Feature Importance (Best Model)</div>
+            <div class="card-body">
+                <div id="importancePlot" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    {% if actual_vs_pred_plot %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-exchange-alt me-2"></i>Actual vs Predicted</div>
+            <div class="card-body">
+                <div id="actualPredPlot" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if residual_plot %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-wave-square me-2"></i>Residual Analysis</div>
+            <div class="card-body">
+                <div id="residualPlot" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if cm_plot %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-th me-2"></i>Confusion Matrix</div>
+            <div class="card-body">
+                <div id="cmPlot" style="width:100%;height:400px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="text-center">
+    <a href="/predict" class="btn btn-lg btn-primary">
+        <i class="fas fa-magic me-2"></i>Go to Prediction
+    </a>
+    <a href="/train" class="btn btn-lg btn-outline-secondary ms-2">
+        <i class="fas fa-redo me-2"></i>Train Again
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if comparison_plot %}
+var compData = {{ comparison_plot|safe }};
+Plotly.newPlot('comparisonPlot', compData.data, compData.layout, {responsive: true});
+{% endif %}
+
+{% if importance_plot %}
+var impData = {{ importance_plot|safe }};
+Plotly.newPlot('importancePlot', impData.data, impData.layout, {responsive: true});
+{% endif %}
+
+{% if actual_vs_pred_plot %}
+var apData = {{ actual_vs_pred_plot|safe }};
+Plotly.newPlot('actualPredPlot', apData.data, apData.layout, {responsive: true});
+{% endif %}
+
+{% if residual_plot %}
+var resData = {{ residual_plot|safe }};
+Plotly.newPlot('residualPlot', resData.data, resData.layout, {responsive: true});
+{% endif %}
+
+{% if cm_plot %}
+var cmData = {{ cm_plot|safe }};
+Plotly.newPlot('cmPlot', cmData.data, cmData.layout, {responsive: true});
+{% endif %}
+</script>
+{% endblock %}

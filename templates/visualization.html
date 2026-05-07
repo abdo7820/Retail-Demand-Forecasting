@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Data Visualization - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-bar me-2"></i>Data Visualization</h2>
+        <p class="text-muted">Explore the data through interactive visualizations</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Column Visualization -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-chart-area me-2"></i>Column Visualization</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Plot Type</label>
+                        <select name="plot_type" class="form-select" id="plotTypeSelect" onchange="toggleFields()">
+                            <option value="histogram">Histogram (Distribution)</option>
+                            <option value="boxplot">Box Plot (Outliers)</option>
+                            <option value="bar">Bar Chart (Counts)</option>
+                            <option value="scatter">Scatter Plot</option>
+                            <option value="correlation">Correlation Heatmap</option>
+                            <option value="timeseries">Time Series (Demand)</option>
+                            <option value="category_demand">Demand by Category</option>
+                            <option value="region_demand">Demand by Region</option>
+                            <option value="price_demand">Price vs Demand</option>
+                            <option value="discount_impact">Discount Impact</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="singleColDiv">
+                        <label class="form-label">Column</label>
+                        <select name="column" class="form-select">
+                            <option value="">-- Select --</option>
+                            {% for col in columns %}
+                            <option value="{{ col }}">{{ col }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="scatterFields" style="display:none;">
+                        <div class="mb-3">
+                            <label class="form-label">X-Axis</label>
+                            <select name="col_x" class="form-select">
+                                <option value="">-- Select --</option>
+                                {% for col in numeric_cols %}
+                                <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Y-Axis</label>
+                            <select name="col_y" class="form-select">
+                                <option value="">-- Select --</option>
+                                {% for col in numeric_cols %}
+                                <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Color By (optional)</label>
+                            <select name="color_col" class="form-select">
+                                <option value="">None</option>
+                                {% for col in categorical_cols %}
+                                <option value="{{ col }}">{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-paint-brush me-1"></i>Generate Plot
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-lightbulb me-2"></i>Quick Insights</div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="correlation">
+                            <button type="submit" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-th me-1"></i>Correlation Heatmap
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="timeseries">
+                            <button type="submit" class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-chart-line me-1"></i>Demand Over Time
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="category_demand">
+                            <button type="submit" class="btn btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-tags me-1"></i>Demand by Category
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="region_demand">
+                            <button type="submit" class="btn btn-outline-danger w-100 mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>Demand by Region
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="price_demand">
+                            <button type="submit" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-dollar-sign me-1"></i>Price vs Demand
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="plot_type" value="discount_impact">
+                            <button type="submit" class="btn btn-outline-dark w-100 mb-2">
+                                <i class="fas fa-percent me-1"></i>Discount Impact
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if plot_data %}
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-chart-pie me-2"></i>Visualization Result
+    </div>
+    <div class="card-body">
+        <div id="plotDiv" style="width:100%;height:500px;"></div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFields() {
+    var plotType = document.getElementById('plotTypeSelect').value;
+    var singleCol = document.getElementById('singleColDiv');
+    var scatterFields = document.getElementById('scatterFields');
+
+    var noColumnTypes = ['correlation', 'timeseries', 'category_demand', 'region_demand', 'price_demand', 'discount_impact'];
+
+    if (plotType === 'scatter') {
+        singleCol.style.display = 'none';
+        scatterFields.style.display = 'block';
+    } else if (noColumnTypes.includes(plotType)) {
+        singleCol.style.display = 'none';
+        scatterFields.style.display = 'none';
+    } else {
+        singleCol.style.display = 'block';
+        scatterFields.style.display = 'none';
+    }
+}
+
+{% if plot_data %}
+var plotData = {{ plot_data|safe }};
+Plotly.newPlot('plotDiv', plotData.data, plotData.layout, {responsive: true});
+{% endif %}
+
+document.addEventListener('DOMContentLoaded', toggleFields);
+</script>
+{% endblock %}

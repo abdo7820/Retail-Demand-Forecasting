@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-section text-center py-4">
+            <h1 class="display-5 fw-bold text-gradient">Retail Demand Forecasting</h1>
+            <p class="lead text-muted">Advanced Ensemble Machine Learning Pipeline for Demand Prediction</p>
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <span class="badge bg-primary px-3 py-2"><i class="fas fa-layer-group me-1"></i>Bagging</span>
+                <span class="badge bg-danger px-3 py-2"><i class="fas fa-rocket me-1"></i>Boosting</span>
+                <span class="badge bg-info px-3 py-2"><i class="fas fa-vote-yea me-1"></i>Voting</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-table fa-2x text-primary mb-2"></i>
+                <h3 class="fw-bold">{{ info.shape[0] }}</h3>
+                <p class="text-muted mb-0">Total Records</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-columns fa-2x text-success mb-2"></i>
+                <h3 class="fw-bold">{{ info.shape[1] }}</h3>
+                <p class="text-muted mb-0">Features</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-layer-group fa-2x text-warning mb-2"></i>
+                <h3 class="fw-bold">{{ info.categorical_cols|length }}</h3>
+                <p class="text-muted mb-0">Categorical</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-sort-numeric-up fa-2x text-danger mb-2"></i>
+                <h3 class="fw-bold">{{ info.numeric_cols|length }}</h3>
+                <p class="text-muted mb-0">Numeric</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i>Column Information
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col in info.columns %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td><span class="badge bg-secondary">{{ info.dtypes[col] }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-calculator me-2"></i>Numeric Statistics
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Stat</th>
+                                {% for col in info.numeric_cols[:6] %}
+                                <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in ['mean', 'std', 'min', '25%', '50%', '75%', 'max'] %}
+                            <tr>
+                                <td><strong>{{ stat }}</strong></td>
+                                {% for col in info.numeric_cols[:6] %}
+                                <td>{{ info.numeric_stats[col][stat] }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-route me-2"></i>ML Pipeline Steps
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/data" class="text-decoration-none">
+                                <div class="step-icon bg-primary"><i class="fas fa-database fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">1. Explore Data</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/preprocessing" class="text-decoration-none">
+                                <div class="step-icon bg-success"><i class="fas fa-cogs fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">2. Preprocess</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/visualization" class="text-decoration-none">
+                                <div class="step-icon bg-warning"><i class="fas fa-chart-bar fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">3. Visualize</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/train" class="text-decoration-none">
+                                <div class="step-icon bg-danger"><i class="fas fa-brain fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">4. Train Models</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/results" class="text-decoration-none">
+                                <div class="step-icon bg-info"><i class="fas fa-trophy fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">5. Results</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="pipeline-step">
+                            <a href="/predict" class="text-decoration-none">
+                                <div class="step-icon bg-dark"><i class="fas fa-magic fa-lg text-white"></i></div>
+                                <p class="mt-2 fw-bold">6. Predict</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

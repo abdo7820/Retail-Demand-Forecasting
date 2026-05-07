@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Data Preprocessing - Retail Demand Forecasting{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-cogs me-2"></i>Data Preprocessing</h2>
+        <p class="text-muted">Clean, encode, scale, and engineer features from the dataset</p>
+    </div>
+</div>
+
+{% if steps %}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="fas fa-history me-2"></i>Applied Preprocessing Steps
+    </div>
+    <div class="card-body">
+        <ol class="mb-0">
+            {% for step in steps %}
+            <li class="mb-1">{{ step }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-primary">{{ info.shape[0] }}</h5>
+                <small>Rows</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-success">{{ info.shape[1] }}</h5>
+                <small>Columns</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-warning">{{ info.categorical_cols|length }}</h5>
+                <small>Categorical</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card text-center">
+            <div class="card-body">
+                <h5 class="text-danger">{{ info.numeric_cols|length }}</h5>
+                <small>Numeric</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Encode Categorical -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-code me-2"></i>Encode Categorical Variables</div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="action" value="encode">
+                    <div class="mb-3">
+                        <label class="form-label">Encoding Method</label>
+                        <select name="encode_method" class="form-select">
+                            <option value="label">Label Encoding</option>
+                            <option value="onehot">One-Hot Encoding</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Columns</label>
+                        {% for col in info.categorical_cols %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="encode_columns" value="{{ col }}" id="enc_{{ col }}">
+                            <label class="form-check-label" for="enc_{{ col }}">{{ col }}</label>
+                        </div>
+                        {% endfor %}
+                        {% if not info.categorical_cols %}
+                        <p class="text-muted">No categorical columns found.</p>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="fas fa-exchange-alt me-1"></i>Encode
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scale Features -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-balance-scale me-2"></i>Scale Features</div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="action" value="scale">
+                    <div class="mb-3">
+                        <label class="form-label">Scaling Method</label>
+                        <select name="scale_method" class="form-select">
+                            <option value="standard">Standard Scaler (Z-score)</option>
+                            <option value="minmax">Min-Max Scaler (0-1)</option>
+                            <option value="robust">Robust Scaler (IQR)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Columns</label>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            {% for col in info.numeric_cols %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="scale_columns" value="{{ col }}" id="scl_{{ col }}">
+                                <label class="form-check-label" for="scl_{{ col }}">{{ col }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-compress-arrows-alt me-1"></i>Scale
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Engineering -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-magic me-2"></i>Feature Engineering</div>
+            <div class="card-body">
+                <p>Automatically create new features:</p>
+                <ul>
+                    <li>Date features: year, quarter, week_of_year, day_of_month</li>
+                    <li>Price features: price_diff, discount_amount</li>
+                    <li>Competition features: price_ratio, competitor_diff, is_cheaper</li>
+                    <li>Stock features: stock_demand_ratio</li>
+                    <li>Demand classification: Low / Medium / High</li>
+                </ul>
+                <form method="POST">
+                    <input type="hidden" name="action" value="feature_engineering">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-hat-wizard me-1"></i>Apply Feature Engineering
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="fas fa-undo me-2"></i>Reset Data</div>
+            <div class="card-body">
+                <p>Reset the dataset back to its original state, removing all preprocessing steps.</p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="fas fa-redo me-1"></i>Reset to Original
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
