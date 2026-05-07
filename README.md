@@ -1,4 +1,6 @@
 # Retail Demand Forecasting - Ensemble ML Pipeline
+![Uploading image.png…]()
+
 
 An advanced Machine Learning system for retail demand forecasting using **Ensemble Techniques** (Voting, Bagging, Boosting). Built with a full Flask GUI for data preprocessing, visualization, model training, and real-time prediction.
 
